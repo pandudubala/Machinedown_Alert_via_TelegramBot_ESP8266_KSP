@@ -1,0 +1,127 @@
+//HEllo Techenthuastics
+//Kindly read the Uncommented texts before you are going to upload this sketch 
+//if you having any douts kindly reach out US at www.kspelectronics.com
+//Lets get start 
+
+#include <ESP8266WiFi.h>
+//Install the UniversalTelegramBot and WiFiClientSecure libraries through the Arduino Library Manager.
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+
+//Tip:- Wi-Fi credentials .set your wifi speed to 2.4Ghzs /Any available  because your esp8266 supports that range only 
+const char* ssid = "KSP";           // CHANGE /Replace with your Available Wifi Wi-Fi Name 
+const char* password = "9550421866";   // CHANGE /Replace with your Available Wi-Fi password
+
+// Telegram bot 
+//Setup Telegram Bot:Create a Telegram bot using @BotFather and obtain your bot token.
+//Open Telegram and search for @BotFather.
+//Start a conversation with BotFather and use the /newbot command to create a bot.
+//Follow the prompts to give your bot a name and a username.
+//After creation, BotFather will provide you with a Bot Token. Save this token for use in your code.
+//Start a Chat with Your Bot:
+//Search for your bot in Telegram using the bot’s username.
+//Start a conversation with the bot by clicking the Start button or sending a message (e.g., "Hello").
+//Find Your Chat ID:
+//To get your Chat ID, you’ll need to retrieve the incoming message details sent to the bot.
+//Search for @userinfobot in Telegram.
+//Start a chat with it.
+//It will reply with your Chat ID.
+
+const char* botToken = "##########:###################################"; // Replace with your Telegram Bot Token
+const char* chatID = "XXXXXXXXXX";             // Replace with your Chat ID
+
+// Telegram objects
+WiFiClientSecure client;
+UniversalTelegramBot bot(botToken, client);
+
+// Pin configuration
+const int inputPin = 4;  // GPIO 2 (D2) pin for input
+bool previousState = HIGH; // Track the last state of the pin
+
+void setup() {
+  Serial.begin(74880);
+  pinMode(inputPin, INPUT_PULLUP); // MApping the pin to pull up the Status of button 
+  // Connect to Wi-Fi
+  Serial.print("Connecting to Wi-Fi");
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
+  }
+  Serial.println("\nWi-Fi connected!");
+
+  // Initialize Telegram bot client
+  client.setInsecure();
+  Serial.println("Telegram bot ready!");
+}
+
+void loop() {
+  // Read the current state of the pin
+  bool currentState = digitalRead(inputPin);
+
+  // Detect state change from LOW to HIGH
+  if (currentState == LOW && previousState == HIGH) {
+    Serial.println("Input pin detected LOW! Sending Telegram message...");
+    sendTelegramMessage("Machine_QPL Down Need your Support!");
+  }
+
+  // Update the previous state
+  previousState = currentState;
+
+  // Handle the Telegram messages 
+  handleTelegramMessages();
+
+  delay(1000); // Adjust delay as required 
+}
+
+void sendTelegramMessage(String message) {
+  if (bot.sendMessage(chatID, message, "")) {
+    Serial.println("Message sent successfully!");
+  } else {
+    Serial.println("Failed to send message.");
+  }
+}
+
+void handleTelegramMessages() {
+  // Check for  the new messages available 
+  int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+
+  while (numNewMessages) {
+    for (int i = 0; i < numNewMessages; i++) {
+      String chatText = bot.messages[i].text;
+      String senderName = bot.messages[i].from_name;
+
+      Serial.println("Message received: " + chatText);
+
+      // Respond to "/status" command recive from BOT 
+      if (chatText == "/status") {
+        String pinStatus = digitalRead(inputPin) == HIGH ? "HIGH" : "LOW";
+        String response = "Current pin status: " + pinStatus;
+        bot.sendMessage(chatID, response, "");
+      } else {
+        bot.sendMessage(chatID, "Unknown command. Try /status to check pin state.", "");
+      }
+    }
+
+    // Fetch the next reciveing batch  of messages
+    numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+  }
+}
+//For more details about project and Advancements.
+//🚀 Turn Your Ideas into Reality with KSPElectronics.in! 🌟
+
+//Are you working on the next big IoT, robotics, or electronics project? KSPElectronics.in is your ultimate destination for:
+//✅ Premium Quality Components
+//✅ Reliable PCB Solutions
+//✅ Custom IoT Development Support
+//✅ Affordable Pricing
+
+//💡 Why Choose Us?
+//🔹 Wide Range of Components
+//🔹 Expert Support for All Your Projects
+//🔹 Quick Delivery to Keep Your Innovations On Track
+
+//🌐 Visit us now at www.KSPElectronics.in and take your projects to the next level!
+//💬 Need Help? We’re just a message away. Let's build something amazing together!
+
+//#KSPElectronics #InnovationUnleashed #DIYProjects
